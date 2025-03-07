@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - 'master'
+      - 'ci/*'
+      - 'feat/*'
+      - 'fix/*'
+    pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Store GPG key
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' }}
+        run: echo "${{ secrets.GPG_PK }}" | base64 --decode | gzip -d | gpg --import
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version-file: '.java-version'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-encryption-key: ${{ secrets.GradleEncryptionKey }} # openssl rand -base64 16
+          validate-wrappers: true
+          build-scan-publish: true
+          build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
+          build-scan-terms-of-use-agree: "yes"
+          gradle-version: wrapper
+      - name: Run build
+        run: ./gradlew build check
+      - name: Publish to Maven Central(Tagged)
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          VERSION=${{ github.ref_name }}
+          ./gradlew publish -Psigning.gnupg.keyName=pub@iseki.space -Pversion=${VERSION:1}
+#      - name: Generate code coverage report
+#        run: ./gradlew koverXmlReport
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v5
+#        with:
+#          files: 'build/reports/kover/report.xml'
+#          token: ${{ secrets.CODECOV_TOKEN }}
