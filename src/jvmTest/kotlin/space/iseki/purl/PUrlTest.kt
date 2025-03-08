@@ -51,7 +51,7 @@ class PUrlTest {
         val json = Json { ignoreUnknownKeys = true }
         val list = json.decodeFromString<List<A>>(testData)
         return list.map {
-            DynamicTest.dynamicTest(it.description){
+            DynamicTest.dynamicTest(it.description) {
                 if (it.is_invalid) {
                     assertFailsWith<PUrlParsingException>(message = it.toString()) { println(PUrl.parse(it.purl)) }
                 } else {

@@ -128,9 +128,9 @@ data class PUrl internal constructor(
          * @throws PUrlBuildException If validation fails
          */
         fun build(): PUrl {
-            return try{
+            return try {
                 build0()
-            }catch (e: PUrlException){
+            } catch (e: PUrlException) {
                 throw PUrlBuildException(e.message.orEmpty())
             }
         }
@@ -166,6 +166,7 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "apk" -> {
                     if (namespace.isEmpty()) fail("apk: namespace is required (vendor such as alpine or openwrt)")
                     // Namespace is case-insensitive and must be lowercase
@@ -175,6 +176,7 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "bitbucket" -> {
                     if (namespace.isEmpty()) fail("bitbucket: namespace is required (user or organization)")
                     // Namespace is case-insensitive and must be lowercase
@@ -184,18 +186,22 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "bitnami" -> {
                     // Name must be lowercase
                     name = name.lowercase()
                 }
+
                 "cargo" -> {
                     // No special validation
                 }
+
                 "cocoapods" -> {
                     if (name.contains(" ") || name.contains("+") || name.startsWith(".")) {
                         fail("cocoapods: name cannot contain whitespace, a plus (+) character, or begin with a period (.)")
                     }
                 }
+
                 "composer" -> {
                     if (namespace.isEmpty()) fail("composer: namespace is required (vendor)")
                     // Namespace is case-insensitive and must be lowercase
@@ -205,6 +211,7 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "conan" -> {
                     // Conan packages need both namespace and channel qualifier, or neither
                     val hasChannel = qualifiers.any { it.first == "channel" }
@@ -215,9 +222,11 @@ data class PUrl internal constructor(
                         fail("conan: when channel qualifier is present, namespace is required")
                     }
                 }
+
                 "conda" -> {
                     // No special validation
                 }
+
                 "cpan" -> {
                     if (namespace.isNotEmpty()) {
                         // If namespace is present, it must be uppercase CPAN author ID
@@ -235,6 +244,7 @@ data class PUrl internal constructor(
                         }
                     }
                 }
+
                 "cran" -> {
                     // Name is case-sensitive
                     // CRAN packages must have a version
@@ -242,6 +252,7 @@ data class PUrl internal constructor(
                         fail("cran: version is required")
                     }
                 }
+
                 "deb" -> {
                     if (namespace.isEmpty()) fail("deb: namespace is required (vendor such as debian or ubuntu)")
                     // Namespace is case-insensitive and must be lowercase
@@ -251,15 +262,19 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "docker" -> {
                     // No special validation
                 }
+
                 "gem" -> {
                     // No special validation
                 }
+
                 "generic" -> {
                     if (name.isEmpty()) fail("generic: name is required")
                 }
+
                 "github" -> {
                     if (namespace.isEmpty()) fail("github: namespace is required (user or organization)")
                     // Namespace is case-insensitive and must be lowercase
@@ -269,6 +284,7 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "golang" -> {
                     // Namespace and name must be lowercase
                     for (i in namespace.indices) {
@@ -276,9 +292,11 @@ data class PUrl internal constructor(
                     }
                     name = name.lowercase()
                 }
+
                 "hackage" -> {
                     // Name is case-sensitive and uses kebab-case
                 }
+
                 "hex" -> {
                     // Namespace is optional, case-insensitive, and must be lowercase
                     for (i in namespace.indices) {
@@ -287,6 +305,7 @@ data class PUrl internal constructor(
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
                 }
+
                 "huggingface" -> {
                     // Huggingface packages can have no namespace
                     // Name is case-sensitive
@@ -295,6 +314,7 @@ data class PUrl internal constructor(
                         version = version.lowercase()
                     }
                 }
+
                 "luarocks" -> {
                     // Namespace is case-insensitive, lowercase recommended
                     for (i in namespace.indices) {
@@ -305,9 +325,11 @@ data class PUrl internal constructor(
                     // Version is case-sensitive, must be lowercase
                     version = version.lowercase()
                 }
+
                 "maven" -> {
                     if (namespace.isEmpty()) fail("maven: namespace is required (group id)")
                 }
+
                 "mlflow" -> {
                     // Check if repository_url contains azuredatabricks.net
                     val repositoryUrl = qualifiers.find { it.first == "repository_url" }?.second ?: ""
@@ -317,13 +339,16 @@ data class PUrl internal constructor(
                     }
                     // Otherwise name is case-sensitive (like Azure ML)
                 }
+
                 "npm" -> {
                     // Name cannot have uppercase letters
                     name = name.lowercase()
                 }
+
                 "nuget" -> {
                     // No special validation
                 }
+
                 "oci" -> {
                     // Name is case-insensitive and must be lowercase
                     name = name.lowercase()
@@ -332,6 +357,7 @@ data class PUrl internal constructor(
                         fail("oci: version is required (sha256:hex_encoded_lowercase_digest)")
                     }
                 }
+
                 "pub" -> {
                     // Name must be lowercase and only allow [a-z0-9_] characters
                     name = name.lowercase()
@@ -339,11 +365,13 @@ data class PUrl internal constructor(
                         fail("pub: name must only contain [a-z0-9_] characters")
                     }
                 }
+
                 "pypi" -> {
                     // PyPI treats "-" and "_" as the same character and is case-insensitive
                     // Name must be lowercase, underscores replaced with dashes
                     name = name.lowercase().replace("_", "-")
                 }
+
                 "rpm" -> {
                     if (namespace.isEmpty()) fail("rpm: namespace is required (vendor such as fedora or opensuse)")
                     // Namespace is case-insensitive and must be lowercase
@@ -352,6 +380,7 @@ data class PUrl internal constructor(
                     }
                     // Name is case-sensitive
                 }
+
                 "swid" -> {
                     // Check if tag_id qualifier exists
                     val hasTagId = qualifiers.any { it.first == "tag_id" && it.second.isNotEmpty() }
@@ -359,6 +388,7 @@ data class PUrl internal constructor(
                         fail("swid: tag_id qualifier must not be empty")
                     }
                 }
+
                 "swift" -> {
                     if (namespace.isEmpty()) fail("swift: namespace is required (source host and user/organization)")
                     if (version.isEmpty()) fail("swift: version is required")
@@ -366,6 +396,7 @@ data class PUrl internal constructor(
                         fail("swift: name is required")
                     }
                 }
+
                 else -> {
                     // For unknown types, no special validation
                 }
