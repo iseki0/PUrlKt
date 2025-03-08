@@ -39,6 +39,7 @@ class PUrlTest {
         data class A(
             val description: String,
             val purl: String,
+            val canonical_purl: String?,
             val type: String?,
             val namespace: String?,
             val name: String?,
@@ -62,6 +63,7 @@ class PUrlTest {
                     assertEquals(it.version.orEmpty(), purl.version, it.toString())
                     assertEquals(it.qualifiers.orEmpty(), purl.qualifiers.toMap(), it.toString())
                     assertEquals(it.subpath.orEmpty(), purl.subpath, it.toString())
+                    assertEquals(it.canonical_purl, purl.toString(), it.toString())
                 }
             }
         }

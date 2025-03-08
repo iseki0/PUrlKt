@@ -422,26 +422,27 @@ data class PUrl internal constructor(
     override fun toString(): String = _toString
 
     private val _toString by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        val preparedSize =
-            schema.length + type.length + namespace.sumOf { it.length } + name.length + version.length + qualifiers.sumOf { it.first.length + it.second.length } + subpath.length + 20
-        buildString(preparedSize) {
+        buildString {
             append(schema).append(':').append(type).append('/')
             namespace.forEachIndexed { index, s ->
                 if (index != 0) append('/')
                 append(encodeURIComponent(s))
             }
             if (namespace.isNotEmpty()) append('/')
-            append(encodeURIComponent(name))
+            append(encodeURIComponent(name).replace("%3A", ":"))
             if (version.isNotEmpty()) append('@').append(encodeURIComponent(version))
             if (qualifiers.isNotEmpty()) {
                 append('?')
-                qualifiers.forEachIndexed { index, (k, v) ->
+                qualifiers.sortedBy { it.first }.forEachIndexed { index, (k, v) ->
                     if (index != 0) append('&')
                     append(encodeURIComponent(k))
-                    if (v.isNotEmpty()) append('=').append(encodeURIComponent(v))
+                    if (v.isNotEmpty()) append('=').append(encodeURIComponent(v).replace("%2F", "/").replace("%3A", ":"))
                 }
             }
-            if (subpath.isNotEmpty()) append('#').append(encodeURIComponent(subpath))
+            if (subpath.isNotEmpty()) append('#').append(
+                subpath.split('/')
+                .filterNot { it == ".." || it == "." }
+                .joinToString(separator = "/") { encodeURIComponent(it) })
         }
     }
 
