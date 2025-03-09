@@ -2,8 +2,8 @@ import java.net.URI
 import java.util.*
 
 plugins {
-    kotlin("multiplatform") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("multiplatform") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.10"
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.17.0"
     id("org.jetbrains.dokka") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
