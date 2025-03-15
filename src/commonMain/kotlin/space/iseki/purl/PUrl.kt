@@ -1,6 +1,12 @@
 package space.iseki.purl
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.serialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * Package URL (purl) is a string that is used to identify and locate a software package.
@@ -16,7 +22,7 @@ import kotlinx.serialization.Serializable
  * - subpath: extra subpath within a package, relative to the package root
  */
 @ConsistentCopyVisibility
-@Serializable
+@Serializable(with = PUrlSerializer::class)
 data class PUrl internal constructor(
     val schema: String,
     val type: String,
@@ -436,7 +442,9 @@ data class PUrl internal constructor(
                 qualifiers.sortedBy { it.first }.forEachIndexed { index, (k, v) ->
                     if (index != 0) append('&')
                     append(encodeURIComponent(k))
-                    if (v.isNotEmpty()) append('=').append(encodeURIComponent(v).replace("%2F", "/").replace("%3A", ":"))
+                    if (v.isNotEmpty()) append('=').append(
+                        encodeURIComponent(v).replace("%2F", "/").replace("%3A", ":")
+                    )
                 }
             }
             if (subpath.isNotEmpty()) append('#').append(
@@ -507,6 +515,24 @@ data class PUrl internal constructor(
             }
         }
     }
+}
+
+object PUrlSerializer : KSerializer<PUrl> {
+    override val descriptor: SerialDescriptor
+        get() = serialDescriptor<String>()
+
+    override fun deserialize(decoder: Decoder): PUrl {
+        try {
+            return PUrl.parse(decoder.decodeString())
+        } catch (e: PUrlParsingException) {
+            throw SerializationException("failed to decode PURL: " + e.message, e)
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: PUrl) {
+        encoder.encodeString(value.toString())
+    }
+
 }
 
 private fun parseNS(input: String, range: IntRange): List<String> {
