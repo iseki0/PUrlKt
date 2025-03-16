@@ -516,7 +516,65 @@ private fun fail(message: String): Nothing {
     throw PUrlException(message)
 }
 
-internal expect fun <T> asUnmodifiableList(list: List<T>): List<T>
-internal expect fun decodeURIComponent0(input: String): String
-internal expect fun encodeURIComponent0(input: String): String
-internal expect fun escapeString(input: String): String
+internal fun <T> asUnmodifiableList(list: List<T>): List<T> =
+    if (list.isEmpty()) emptyList() else object : AbstractList<T>() {
+        override val size: Int
+            get() = list.size
+
+        override fun get(index: Int): T = list[index]
+
+        override fun toString(): String = list.toString()
+    }
+
+internal fun String.escapeStringLiteral(): String {
+    if (isEmpty()) return ""
+    val chars = this.toCharArray()
+    val length = chars.size
+    var from = 0
+    var to = 0
+    while (from < length) {
+        var ch = chars[from++]
+        if (ch == '\\') {
+            ch = if (from < length) chars[from++] else '\u0000'
+            when (ch) {
+                'b' -> ch = '\b'
+                'f' -> ch = '\u000c'
+                'n' -> ch = '\n'
+                'r' -> ch = '\r'
+                's' -> ch = ' '
+                't' -> ch = '\t'
+                '\'', '\"', '\\' -> { /* 保持原样 */
+                }
+
+                in '0'..'7' -> {
+                    val limit = minOf(from + if (ch <= '3') 2 else 1, length)
+                    var code = ch - '0'
+                    while (from < limit) {
+                        val c = chars[from]
+                        if (c < '0' || c > '7') break
+                        from++
+                        code = (code shl 3) or (c - '0')
+                    }
+                    ch = code.toChar()
+                }
+
+                '\n' -> continue
+                '\r' -> {
+                    if (from < length && chars[from] == '\n') {
+                        from++
+                    }
+                    continue
+                }
+
+                else -> {
+                    val msg = String.format(
+                        "Invalid escape sequence: \\%c \\\\u%04X", ch, ch.code
+                    )
+                    throw IllegalArgumentException(msg)
+                }
+            }
+        }
+        chars[to++] = ch
+    }
+    return String(chars, 0, to)
+}
