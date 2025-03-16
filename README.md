@@ -12,7 +12,7 @@ A Kotlin library for parsing and generating [package-url](https://github.com/pac
 
 ```kotlin
 dependencies {
-    implementation("space.iseki.purlkt:purlkt:0.0.2")
+    implementation("space.iseki.purlkt:purlkt:0.0.3")
 }
 ```
 
@@ -25,6 +25,6 @@ Since the project is in Kotlin Multiplatform, for Maven user you have to specify
 <dependency>
     <groupId>space.iseki.purlkt</groupId>
     <artifactId>purlkt-jvm</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
