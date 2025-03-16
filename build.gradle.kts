@@ -24,12 +24,18 @@ kotlin {
     jvm {
         withJava()
     }
+    js {
+        browser()
+    }
+    wasmJs()
+    mingwX64()
+    linuxX64()
+    linuxArm64()
 }
 
 dependencies {
     commonTestImplementation(kotlin("test"))
     commonMainCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
-    commonMainCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     commonTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
 

@@ -7,6 +7,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlin.jvm.JvmStatic
 
 /**
  * Package URL (purl) is a string that is used to identify and locate a software package.
@@ -526,6 +527,7 @@ internal fun <T> asUnmodifiableList(list: List<T>): List<T> =
         override fun toString(): String = list.toString()
     }
 
+@OptIn(ExperimentalStdlibApi::class)
 internal fun String.escapeStringLiteral(): String {
     if (isEmpty()) return ""
     val chars = this.toCharArray()
@@ -567,14 +569,12 @@ internal fun String.escapeStringLiteral(): String {
                 }
 
                 else -> {
-                    val msg = String.format(
-                        "Invalid escape sequence: \\%c \\\\u%04X", ch, ch.code
-                    )
+                    val msg = "Invalid escape sequence: \\\\u" + ch.code.toUInt().toHexString()
                     throw IllegalArgumentException(msg)
                 }
             }
         }
         chars[to++] = ch
     }
-    return String(chars, 0, to)
+    return chars.concatToString(0, 0 + to)
 }
