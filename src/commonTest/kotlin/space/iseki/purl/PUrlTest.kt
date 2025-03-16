@@ -2,6 +2,7 @@ package space.iseki.purl
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.Test
@@ -12,24 +13,24 @@ class PUrlTest {
 
     @Test
     fun testParse() {
-        checkParse("schema:type/name/space/name")
-        checkParse("schema:type/name/space/name?query")
-        checkParse("schema:type/name/space/name#fragment")
-        checkParse("schema:type/name/space/name@version")
-        checkParse("schema:type/namespace/name?query#fragment@version")
-        checkParse("schema://type/namespace/name")
-        checkParse("schema://type/namespace/name?query")
-        checkParse("schema://type/namespace/name#fragment")
-        checkParse("schema://type/namespace/name@version")
-        checkParse("schema://type/namespace/name?query#fragment@version")
+        checkParse("pkg:type/name/space/name")
+        checkParse("pkg:type/name/space/name?query")
+        checkParse("pkg:type/name/space/name#fragment")
+        checkParse("pkg:type/name/space/name@version")
+        checkParse("pkg:type/namespace/name?query#fragment@version")
+        checkParse("pkg://type/namespace/name")
+        checkParse("pkg://type/namespace/name?query")
+        checkParse("pkg://type/namespace/name#fragment")
+        checkParse("pkg://type/namespace/name@version")
+        checkParse("pkg://type/namespace/name?query#fragment@version")
     }
 
     private fun checkParse(s: String) {
         val p = PUrl.parse(s)
-        val s2 = p.toString()
+        val s2 = p.toUriString()
         val p2 = PUrl.parse(s2)
         assertEquals(p, p2)
-        assertEquals(p.toString(), p2.toString())
+        assertEquals(p.toUriString(), p2.toUriString())
         println("$s -> $p2")
     }
 
@@ -53,6 +54,8 @@ class PUrlTest {
         val list = json.decodeFromString<List<A>>(testData)
         return list.map {
             DynamicTest.dynamicTest(it.description) {
+                // https://github.com/package-url/purl-spec/issues/39#issuecomment-2727057029
+                Assumptions.assumeFalse(it.description == "docker uses qualifiers and hash image id as versions")
                 if (it.is_invalid) {
                     assertFailsWith<PUrlParsingException>(message = it.toString()) { println(PUrl.parse(it.purl)) }
                 } else {

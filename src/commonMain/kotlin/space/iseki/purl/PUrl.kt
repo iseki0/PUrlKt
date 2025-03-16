@@ -24,7 +24,6 @@ import kotlinx.serialization.encoding.Encoder
 @ConsistentCopyVisibility
 @Serializable(with = PUrlSerializer::class)
 data class PUrl internal constructor(
-    val schema: String,
     val type: String,
     val namespace: List<String>,
     val name: String,
@@ -37,25 +36,12 @@ data class PUrl internal constructor(
      * Use this class to construct a PUrl object with the desired components.
      */
     class Builder {
-        private var schema: String = "pkg"
         private var type: String = ""
         private val namespace = mutableListOf<String>()
         private var name: String = ""
         private var version: String = ""
         private val qualifiers = mutableListOf<Pair<String, String>>()
         private var subpath: String = ""
-
-        /**
-         * Sets the schema component of the purl.
-         * The schema will be converted to lowercase.
-         *
-         * @param schema The schema to set, typically "pkg"
-         * @return This builder instance for method chaining
-         */
-        fun schema(schema: String): Builder {
-            this.schema = schema.lowercase()
-            return this
-        }
 
         /**
          * Sets the type component of the purl.
@@ -254,6 +240,9 @@ data class PUrl internal constructor(
                 "cran" -> {
                     // Name is case-sensitive
                     // CRAN packages must have a version
+                    if (name.isEmpty()) {
+                        fail("cran: name is required")
+                    }
                     if (version.isEmpty()) {
                         fail("cran: version is required")
                     }
@@ -409,7 +398,6 @@ data class PUrl internal constructor(
             }
 
             return PUrl(
-                schema = schema,
                 type = type,
                 namespace = asUnmodifiableList(namespace),
                 name = name,
@@ -427,31 +415,36 @@ data class PUrl internal constructor(
      */
     override fun toString(): String = _toString
 
+    fun toUriString() = _toString
+
     private val _toString by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildString {
-            append(schema).append(':').append(type).append('/')
-            namespace.forEachIndexed { index, s ->
-                if (index != 0) append('/')
-                append(encodeURIComponent(s))
-            }
-            if (namespace.isNotEmpty()) append('/')
-            append(encodeURIComponent(name).replace("%3A", ":"))
-            if (version.isNotEmpty()) append('@').append(encodeURIComponent(version))
-            if (qualifiers.isNotEmpty()) {
-                append('?')
-                qualifiers.sortedBy { it.first }.forEachIndexed { index, (k, v) ->
-                    if (index != 0) append('&')
-                    append(encodeURIComponent(k))
-                    if (v.isNotEmpty()) append('=').append(
-                        encodeURIComponent(v).replace("%2F", "/").replace("%3A", ":")
+        buildUri {
+            withSchema("pkg")
+            addPathSegment(type)
+            buildList {
+                add(type.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L))
+                // especially rules:
+                // the '@' version separator must be encoded as %40 elsewhere
+                namespace.forEach { add(it.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L).replace("@", "%40")) }
+                if (name.isNotEmpty()) {
+                    add(
+                        if (version.isNotEmpty()) {
+                            "$name@$version".escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                        } else {
+                            name.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                        }
                     )
                 }
+            }.let {
+                val joinedPath = it.joinToString("/")
+                withRawPath(joinedPath, escape = false)
             }
-            if (subpath.isNotEmpty()) append('#').append(
-                subpath.split('/')
-                .filterNot { it == ".." || it == "." }
-                .joinToString(separator = "/") { encodeURIComponent(it) })
-        }
+            qualifiers.sortedBy { it.first }.forEach { (k, v) -> addQuery(k, v) }
+            if (subpath.isNotEmpty()) {
+                val p = subpath.split('/').filterNot { it == ".." || it == "." }.joinToString(separator = "/")
+                withFragment(p)
+            }
+        }.toString()
     }
 
     companion object {
@@ -465,52 +458,35 @@ data class PUrl internal constructor(
         @JvmStatic
         fun parse(input: String): PUrl {
             try {
-                val schema = findingSchemaPart(input)
-                val type = findingTypePart(input, schema.last + 2)
-                val nsName = findingNsNamePart(input, type.last + 2)
-                val name = findingNameInNsName(input, nsName)
-                val namespace = run {
-                    for (i in name.first - 1 downTo nsName.first) {
-                        // skip the trailing '/'
-                        if (input[i] == '/') continue
-                        return@run nsName.first..i
+                val uri = try {
+                    Uri(input)
+                } catch (e: UriSyntaxException) {
+                    throw PUrlParsingException(input, "invalid URI: " + e.message)
+                }
+                if (uri.schema != "pkg") throw PUrlParsingException(input, "invalid schema: ${uri.schema}")
+                var pathSegments = uri.rawPath.orEmpty().removePrefix("/").split('/').map { it.unescape(it.indices) }
+                if (!uri.decodedHost.isNullOrEmpty()) {
+                    pathSegments = listOf(uri.decodedHost) + pathSegments
+                }
+                if (pathSegments.size < 2) {
+                    throw PUrlParsingException(input, "type and name are required")
+                }
+                val (nameText, versionText) = pathSegments.last().let {
+                    val i = it.indexOf('@')
+                    if (i == -1) {
+                        it to ""
+                    } else {
+                        it.substring(0, i) to if (i > it.length) "" else it.substring(i + 1)
                     }
-                    return@run IntRange.EMPTY
                 }
-                var pos = nsName.last + 1
-                val version = if (pos < input.length && input[pos] == '@') {
-                    findingVersionPart(input, pos).also { pos = it.last + 1 }
-                } else {
-                    IntRange.EMPTY
-                }
-                val qualifiers = if (pos < input.length && input[pos] == '?') {
-                    findingQualifiersPart(input, pos).also { pos = it.last + 1 }
-                } else {
-                    IntRange.EMPTY
-                }
-                val subpath = if (pos < input.length && input[pos] == '#') {
-                    findingSubpathPart(input, pos).also { pos = it.last + 1 }
-                } else {
-                    IntRange.EMPTY
-                }
-                // parse namespace
-                val namespaceSegments = parseNS(input, namespace)
-                val nameText = input.substring(name).let(::decodeURIComponent)
-                val typeText = input.substring(type).lowercase()
-                val versionText = input.substring(version).let(::decodeURIComponent)
-                val qualifierList = parseQuery(input, qualifiers)
-                val subpathText = input.substring(subpath).removeSurrounding("/").let(::decodeURIComponent)
-                val schemaText = input.substring(schema).lowercase()
-
-                return Builder().schema(schemaText)
-                    .type(typeText)
+                return Builder().type(pathSegments.first())
                     .name(nameText)
-                    .namespace(namespaceSegments)
+                    .namespace(pathSegments.slice(1 until pathSegments.lastIndex))
                     .version(versionText)
-                    .qualifiers(qualifierList)
-                    .subpath(subpathText)
+                    .qualifiers(uri.queryArguments.orEmpty().map { (k, v) -> k.lowercase() to v.orEmpty() })
+                    .subpath(uri.decodedFragment.orEmpty().removeSurrounding("/"))
                     .build0()
-            } catch (e: PUrlException) {
+            } catch (e: PUrlBuildException) {
                 throw PUrlParsingException(input, e.message.orEmpty())
             }
         }
@@ -535,139 +511,8 @@ object PUrlSerializer : KSerializer<PUrl> {
 
 }
 
-private fun parseNS(input: String, range: IntRange): List<String> {
-    if (range.isEmpty()) return emptyList()
-    var c = 0
-    for (i in range) {
-        if (input[i] == '/') c++
-    }
-    if (c == 0) {
-        return listOf(input.substring(range).let(::decodeURIComponent))
-    }
-    val r = arrayOfNulls<String>(c + 1)
-    var pos = range.first
-    for (i in 0..c) {
-        val next = input.indexOf('/', pos).let { if (it == -1) range.last + 1 else it }
-        r[i] = decodeURIComponent(input.substring(pos until next))
-        pos = next + 1
-    }
-    @Suppress("UNCHECKED_CAST") return asUnmodifiableList(r.asList()) as List<String>
-}
-
-private fun parseQuery(input: String, range: IntRange): List<Pair<String, String>> {
-    if (range.isEmpty()) return emptyList()
-    var c = 0
-    for (i in range) {
-        if (input[i] == '&') c++
-    }
-    val r = arrayOfNulls<Pair<String, String>>(c + 1)
-    var pos = range.first
-    for (i in 0..c) {
-        val next = input.indexOf('&', pos).let { if (it == -1) range.last + 1 else it }
-        val eq = input.indexOf('=', pos)
-        if (eq == -1 || eq > next) {
-            r[i] = decodeURIComponent(input.substring(pos until next)).lowercase() to ""
-        } else {
-            r[i] =
-                decodeURIComponent(input.substring(pos until eq)).lowercase() to decodeURIComponent(input.substring(eq + 1 until next))
-        }
-        pos = next + 1
-    }
-    @Suppress("UNCHECKED_CAST") return asUnmodifiableList(r.asList()) as List<Pair<String, String>>
-}
-
-private fun findingSchemaPart(input: String): IntRange {
-    val pos = input.indexOf(':')
-    return (0 until pos).also { if (it.isEmpty()) fail("parsing schema failed") }
-}
-
-private fun findingTypePart(input: String, startAt: Int): IntRange {
-    val begin = startAt + measureLeadingSlash(input, startAt)
-    return (begin..<input.indexOf('/', begin)).also {
-        if (it.isEmpty()) fail("parsing type failed")
-    }
-}
-
-private fun findingNsNamePart(input: String, startAt: Int): IntRange {
-    val begin = startAt + measureLeadingSlash(input, startAt)
-    var pos = begin
-    while (pos < input.length) {
-        when (input[pos]) {
-            '?', '#', '@' -> break
-            else -> pos += 1
-        }
-    }
-    return (begin until pos).also { if (it.isEmpty()) fail("parsing namespace and name failed") }
-}
-
-private fun findingNameInNsName(input: String, nsName: IntRange): IntRange {
-    for (i in nsName.reversed()) {
-        (input.lastIndexOf('/', i) + 1..i).let { return it }
-    }
-    fail("parsing name failed")
-}
-
-private fun findingVersionPart(input: String, startAt: Int): IntRange {
-    var pos = input.indexOf('@', startAt)
-    if (pos == -1) return IntRange.EMPTY
-    val begin = pos + 1
-    while (pos < input.length) {
-        when (input[pos]) {
-            '?', '#' -> break
-            else -> pos += 1
-        }
-    }
-    return begin..<pos
-}
-
-private fun findingQualifiersPart(input: String, startAt: Int): IntRange {
-    var pos = input.indexOf('?', startAt)
-    if (pos == -1) return IntRange.EMPTY
-    val begin = pos + 1
-    while (pos < input.length) {
-        when (input[pos]) {
-            '#' -> break
-            else -> pos += 1
-        }
-    }
-    return begin..<pos
-}
-
-private fun findingSubpathPart(input: String, startAt: Int): IntRange {
-    val pos = input.indexOf('#', startAt)
-    if (pos == -1) return IntRange.EMPTY
-    val begin = pos + 1
-    return begin..<input.length
-}
-
-private fun measureLeadingSlash(input: String, startAt: Int): Int {
-    var pos = startAt
-    while (pos < input.length && input[pos] == '/') {
-        pos += 1
-    }
-    return pos - startAt
-}
-
 private fun fail(message: String): Nothing {
     throw PUrlException(message)
-}
-
-private fun decodeURIComponent(input: String): String {
-    try {
-        return decodeURIComponent0(input)
-    } catch (e: Exception) {
-        val msg = e.message.orEmpty()
-        fail("decodeURIComponent failed" + if (msg.isNotEmpty()) ": $msg" else "")
-    }
-}
-
-private fun encodeURIComponent(input: String): String {
-    try {
-        return encodeURIComponent0(input)
-    } catch (e: Exception) {
-        val msg = e.message.orEmpty()
-        fail("encodeURIComponent failed" + if (msg.isNotEmpty()) ": $msg" else "")
-    }
 }
 
 internal expect fun <T> asUnmodifiableList(list: List<T>): List<T>

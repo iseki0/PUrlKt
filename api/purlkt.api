@@ -1,23 +1,22 @@
 public final class space/iseki/purl/PUrl {
 	public static final field Companion Lspace/iseki/purl/PUrl$Companion;
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/util/List;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/util/List;
-	public final fun component7 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getName ()Ljava/lang/String;
 	public final fun getNamespace ()Ljava/util/List;
 	public final fun getQualifiers ()Ljava/util/List;
-	public final fun getSchema ()Ljava/lang/String;
 	public final fun getSubpath ()Ljava/lang/String;
 	public final fun getType ()Ljava/lang/String;
 	public final fun getVersion ()Ljava/lang/String;
 	public fun hashCode ()I
 	public static final fun parse (Ljava/lang/String;)Lspace/iseki/purl/PUrl;
 	public fun toString ()Ljava/lang/String;
+	public final fun toUriString ()Ljava/lang/String;
 }
 
 public final class space/iseki/purl/PUrl$Builder {
@@ -26,7 +25,6 @@ public final class space/iseki/purl/PUrl$Builder {
 	public final fun name (Ljava/lang/String;)Lspace/iseki/purl/PUrl$Builder;
 	public final fun namespace (Ljava/util/List;)Lspace/iseki/purl/PUrl$Builder;
 	public final fun qualifiers (Ljava/util/List;)Lspace/iseki/purl/PUrl$Builder;
-	public final fun schema (Ljava/lang/String;)Lspace/iseki/purl/PUrl$Builder;
 	public final fun subpath (Ljava/lang/String;)Lspace/iseki/purl/PUrl$Builder;
 	public final fun type (Ljava/lang/String;)Lspace/iseki/purl/PUrl$Builder;
 	public final fun version (Ljava/lang/String;)Lspace/iseki/purl/PUrl$Builder;
