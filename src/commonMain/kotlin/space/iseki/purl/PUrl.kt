@@ -486,7 +486,8 @@ data class PUrl internal constructor(
                     .qualifiers(uri.queryArguments.orEmpty().map { (k, v) -> k.lowercase() to v.orEmpty() })
                     .subpath(uri.decodedFragment.orEmpty().removeSurrounding("/"))
                     .build0()
-            } catch (e: PUrlBuildException) {
+            } catch (e: PUrlException) {
+                if (e is PUrlParsingException) throw e
                 throw PUrlParsingException(input, e.message.orEmpty())
             }
         }
