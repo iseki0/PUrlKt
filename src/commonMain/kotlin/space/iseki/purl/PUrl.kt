@@ -426,11 +426,13 @@ data class PUrl internal constructor(
                 add(type.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L))
                 // especially rules:
                 // the '@' version separator must be encoded as %40 elsewhere
-                namespace.forEach { add(it.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L).replace("@", "%40")) }
+                namespace.forEach { add(it.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)) }
                 if (name.isNotEmpty()) {
                     add(
                         if (version.isNotEmpty()) {
-                            "$name@$version".escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                            val escapedName = name.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                            val escapedVersion = version.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                            "$escapedName@$escapedVersion"
                         } else {
                             name.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
                         }
