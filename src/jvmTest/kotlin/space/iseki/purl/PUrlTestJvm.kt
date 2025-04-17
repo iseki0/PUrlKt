@@ -2,7 +2,6 @@ package space.iseki.purl
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
@@ -31,8 +30,6 @@ class PUrlTestJvm {
         val list = json.decodeFromString<List<A>>(testData)
         return list.map {
             DynamicTest.dynamicTest(it.description) {
-                // https://github.com/package-url/purl-spec/issues/39#issuecomment-2727057029
-                Assumptions.assumeFalse(it.description == "docker uses qualifiers and hash image id as versions")
                 if (it.is_invalid) {
                     assertFailsWith<PUrlParsingException>(message = it.toString()) { println(PUrl.parse(it.purl)) }
                 } else {
