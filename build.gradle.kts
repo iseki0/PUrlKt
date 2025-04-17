@@ -33,6 +33,9 @@ kotlin {
         nodejs()
         d8()
     }
+    wasmWasi {
+        nodejs()
+    }
 
     if (System.getenv("CI") == "true") {
         // Tier 1
