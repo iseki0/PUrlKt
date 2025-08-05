@@ -3,7 +3,7 @@ package space.iseki.purl
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PUrlTest {
+class LegacyPUrlTest {
     @Test
     fun testParse() {
         checkParse("pkg:type/name/space/name")
