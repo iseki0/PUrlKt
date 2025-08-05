@@ -1,10 +1,13 @@
+@file:OptIn(ExperimentalWasmDsl::class, ExperimentalAbiValidation::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import java.net.URI
 import java.util.*
 
 plugins {
-    kotlin("multiplatform") version "2.1.10"
-    kotlin("plugin.serialization") version "2.1.10"
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.17.0"
+    kotlin("multiplatform") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
     id("org.jetbrains.dokka") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     `maven-publish`
@@ -20,10 +23,11 @@ allprojects {
 }
 
 kotlin {
-    jvmToolchain(17)
-    jvm {
-        withJava()
+    abiValidation {
+        enabled = true
     }
+    jvmToolchain(17)
+    jvm {}
     js {
         browser()
         nodejs()
@@ -68,7 +72,7 @@ kotlin {
 
 dependencies {
     commonTestImplementation(kotlin("test"))
-    commonMainCompileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
+    commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
     commonTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
 
