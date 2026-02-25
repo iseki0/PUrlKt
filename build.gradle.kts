@@ -6,8 +6,8 @@ import java.net.URI
 import java.util.*
 
 plugins {
-    kotlin("multiplatform") version "2.2.0"
-    kotlin("plugin.serialization") version "2.2.0"
+    kotlin("multiplatform") version "2.3.0"
+    kotlin("plugin.serialization") version "2.3.0"
     id("org.jetbrains.dokka") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     `maven-publish`
