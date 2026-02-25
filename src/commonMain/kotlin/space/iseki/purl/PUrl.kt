@@ -129,16 +129,21 @@ data class PUrl internal constructor(
         }
 
         internal fun build0(): PUrl {
+            if (type.isEmpty()) {
+                fail("type is required")
+            }
+            if (name.isEmpty()) {
+                fail("name is required")
+            }
+
             // Check if type is valid
-            if (type.isNotEmpty()) {
-                // Type cannot start with a number
-                if (type[0].isDigit()) {
-                    fail("type cannot start with a number")
-                }
-                // Type cannot contain invalid characters
-                if (!type.matches(Regex("^[a-zA-Z0-9.+-]+$"))) {
-                    fail("type contains invalid characters, only [a-zA-Z0-9.+-] are allowed")
-                }
+            // Type cannot start with a number
+            if (type[0].isDigit()) {
+                fail("type cannot start with a number")
+            }
+            // Type cannot contain invalid characters
+            if (!type.matches(Regex("^[a-zA-Z0-9.+-]+$"))) {
+                fail("type contains invalid characters, only [a-zA-Z0-9.+-] are allowed")
             }
 
             // Check if qualifier keys are valid
@@ -206,14 +211,7 @@ data class PUrl internal constructor(
                 }
 
                 "conan" -> {
-                    // Conan packages need both namespace and channel qualifier, or neither
-                    val hasChannel = qualifiers.any { it.first == "channel" }
-                    if (namespace.isNotEmpty() && !hasChannel) {
-                        fail("conan: when namespace is present, channel qualifier is required")
-                    }
-                    if (namespace.isEmpty() && hasChannel) {
-                        fail("conan: when channel qualifier is present, namespace is required")
-                    }
+                    // No strict coupling between namespace and channel.
                 }
 
                 "conda" -> {
@@ -221,20 +219,16 @@ data class PUrl internal constructor(
                 }
 
                 "cpan" -> {
-                    if (namespace.isNotEmpty()) {
-                        // If namespace is present, it must be uppercase CPAN author ID
-                        for (i in namespace.indices) {
-                            namespace[i] = namespace[i].uppercase()
-                        }
-                        // Distribution name cannot contain "::"
-                        if (name.contains("::")) {
-                            fail("cpan: distribution name must not contain '::'")
-                        }
-                    } else {
-                        // If no namespace, it's a module name that can contain "::" but not "-"
-                        if (name.contains("-")) {
-                            fail("cpan: module name must not contain '-'")
-                        }
+                    if (namespace.isEmpty()) {
+                        fail("cpan: namespace is required (author id)")
+                    }
+                    // Namespace is uppercase author id.
+                    for (i in namespace.indices) {
+                        namespace[i] = namespace[i].uppercase()
+                    }
+                    // Distribution name cannot contain module notation.
+                    if (name.contains("::")) {
+                        fail("cpan: distribution name must not contain '::'")
                     }
                 }
 
@@ -311,6 +305,12 @@ data class PUrl internal constructor(
                     }
                 }
 
+                "julia" -> {
+                    if (namespace.isNotEmpty()) fail("julia: namespace is prohibited")
+                    val hasUuid = qualifiers.any { it.first == "uuid" && it.second.isNotEmpty() }
+                    if (!hasUuid) fail("julia: uuid qualifier is required")
+                }
+
                 "luarocks" -> {
                     // Namespace is case-insensitive, lowercase recommended
                     for (i in namespace.indices) {
@@ -377,6 +377,15 @@ data class PUrl internal constructor(
                     // Name is case-sensitive
                 }
 
+                "opam" -> {
+                    if (namespace.isNotEmpty()) fail("opam: namespace is prohibited")
+                }
+
+                "otp" -> {
+                    if (namespace.isNotEmpty()) fail("otp: namespace is prohibited")
+                    name = name.lowercase()
+                }
+
                 "swid" -> {
                     // Check if tag_id qualifier exists
                     val hasTagId = qualifiers.any { it.first == "tag_id" && it.second.isNotEmpty() }
@@ -391,6 +400,14 @@ data class PUrl internal constructor(
                     if (name.isEmpty()) {
                         fail("swift: name is required")
                     }
+                }
+
+                "vscode-extension" -> {
+                    if (namespace.isEmpty()) fail("vscode-extension: namespace is required (publisher)")
+                    for (i in namespace.indices) {
+                        namespace[i] = namespace[i].lowercase()
+                    }
+                    name = name.lowercase()
                 }
 
                 else -> {
@@ -423,18 +440,18 @@ data class PUrl internal constructor(
             withSchema("pkg")
             addPathSegment(type)
             buildList {
-                add(type.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L))
+                add(type)
                 // especially rules:
                 // the '@' version separator must be encoded as %40 elsewhere
-                namespace.forEach { add(it.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)) }
+                namespace.forEach { add(it.encodePurlDataComponent()) }
                 if (name.isNotEmpty()) {
                     add(
                         if (version.isNotEmpty()) {
-                            val escapedName = name.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
-                            val escapedVersion = version.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                            val escapedName = name.encodePurlDataComponent()
+                            val escapedVersion = version.encodePurlDataComponent()
                             "$escapedName@$escapedVersion"
                         } else {
-                            name.escape(PATH_ALLOWED_CHARS_H, PATH_ALLOWED_CHARS_L)
+                            name.encodePurlDataComponent()
                         }
                     )
                 }
@@ -442,10 +459,18 @@ data class PUrl internal constructor(
                 val joinedPath = it.joinToString("/")
                 withRawPath(joinedPath, escape = false)
             }
-            qualifiers.sortedBy { it.first }.forEach { (k, v) -> addQuery(k, v) }
+            val query = qualifiers
+                .sortedBy { it.first }
+                .joinToString("&") { (k, v) -> "${k.encodePurlQualifierKey()}=${v.encodePurlDataComponent()}" }
+            if (query.isNotEmpty()) {
+                withRawQuery(query, escape = false)
+            }
             if (subpath.isNotEmpty()) {
-                val p = subpath.split('/').filterNot { it == ".." || it == "." }.joinToString(separator = "/")
-                withFragment(p)
+                val p = subpath
+                    .split('/')
+                    .filterNot { it == ".." || it == "." }
+                    .joinToString(separator = "/") { it.encodePurlDataComponent() }
+                withFragment(p, escape = false)
             }
         }.toString()
     }
@@ -518,6 +543,42 @@ object PUrlSerializer : KSerializer<PUrl> {
 private fun fail(message: String): Nothing {
     throw PUrlException(message)
 }
+
+private fun String.encodePurlQualifierKey(): String {
+    val input = encodeToByteArray()
+    return buildString(input.size) {
+        for (b in input) {
+            val u = b.toInt() and 0xff
+            val c = u.toChar()
+            if (c.match(PURL_QUALIFIER_KEY_ALLOWED_CHARS_H, PURL_QUALIFIER_KEY_ALLOWED_CHARS_L)) {
+                append(c)
+            } else {
+                append('%')
+                append(intToHexUpper((u ushr 4) and 0x0f))
+                append(intToHexUpper(u and 0x0f))
+            }
+        }
+    }
+}
+
+private fun String.encodePurlDataComponent(): String {
+    val input = encodeToByteArray()
+    return buildString(input.size) {
+        for (b in input) {
+            val u = b.toInt() and 0xff
+            val c = u.toChar()
+            if (c.match(PURL_DATA_ALLOWED_CHARS_H, PURL_DATA_ALLOWED_CHARS_L)) {
+                append(c)
+            } else {
+                append('%')
+                append(intToHexUpper((u ushr 4) and 0x0f))
+                append(intToHexUpper(u and 0x0f))
+            }
+        }
+    }
+}
+
+private fun intToHexUpper(value: Int): Char = "0123456789ABCDEF"[value and 0x0f]
 
 internal fun <T> asUnmodifiableList(list: List<T>): List<T> =
     if (list.isEmpty()) emptyList() else object : AbstractList<T>() {

@@ -138,7 +138,7 @@ val testData = """
       {
         "description": "maven often uses qualifiers",
         "purl": "pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repositorY_url=repo.spring.io/release",
-        "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repository_url=repo.spring.io/release",
+        "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repository_url=repo.spring.io%2Frelease",
         "type": "maven",
         "namespace": "org.apache.xmlgraphics",
         "name": "batik-anim",
@@ -150,7 +150,7 @@ val testData = """
       {
         "description": "maven pom reference",
         "purl": "pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?extension=pom&repositorY_url=repo.spring.io/release",
-        "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?extension=pom&repository_url=repo.spring.io/release",
+        "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?extension=pom&repository_url=repo.spring.io%2Frelease",
         "type": "maven",
         "namespace": "org.apache.xmlgraphics",
         "name": "batik-anim",
@@ -361,7 +361,7 @@ val testData = """
         "version": "2.3",
         "qualifiers": null,
         "subpath": null,
-        "is_invalid": true
+        "is_invalid": false
       },
       {
         "description": "invalid conan purl only channel qualifier",
@@ -373,7 +373,7 @@ val testData = """
         "version": "2.3",
         "qualifiers": {"channel": "stable"},
         "subpath": null,
-        "is_invalid": true
+        "is_invalid": false
       },
       {
         "description": "valid conda purl with qualifiers",
@@ -510,7 +510,7 @@ val testData = """
       {
         "description": "Hugging Face model with staging endpoint",
         "purl": "pkg:huggingface/microsoft/deberta-v3-base@559062ad13d311b87b2c455e67dcd5f1c8f65111?repository_url=https://hub-ci.huggingface.co",
-        "canonical_purl": "pkg:huggingface/microsoft/deberta-v3-base@559062ad13d311b87b2c455e67dcd5f1c8f65111?repository_url=https://hub-ci.huggingface.co",
+        "canonical_purl": "pkg:huggingface/microsoft/deberta-v3-base@559062ad13d311b87b2c455e67dcd5f1c8f65111?repository_url=https:%2F%2Fhub-ci.huggingface.co",
         "type": "huggingface",
         "namespace": "microsoft",
         "name": "deberta-v3-base",
@@ -534,7 +534,7 @@ val testData = """
       {
         "description": "MLflow model tracked in Azure Databricks (case insensitive)",
         "purl": "pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow",
-        "canonical_purl": "pkg:mlflow/creditfraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow",
+        "canonical_purl": "pkg:mlflow/creditfraud@3?repository_url=https:%2F%2Fadb-5245952564735461.0.azuredatabricks.net%2Fapi%2F2.0%2Fmlflow",
         "type": "mlflow",
         "namespace": null,
         "name": "creditfraud",
@@ -546,7 +546,7 @@ val testData = """
       {
         "description": "MLflow model tracked in Azure ML (case sensitive)",
         "purl": "pkg:mlflow/CreditFraud@3?repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace",
-        "canonical_purl": "pkg:mlflow/CreditFraud@3?repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace",
+        "canonical_purl": "pkg:mlflow/CreditFraud@3?repository_url=https:%2F%2Fwestus2.api.azureml.ms%2Fmlflow%2Fv1.0%2Fsubscriptions%2Fa50f2011-fab8-4164-af23-c62881ef8c95%2FresourceGroups%2FTestResourceGroup%2Fproviders%2FMicrosoft.MachineLearningServices%2Fworkspaces%2FTestWorkspace",
         "type": "mlflow",
         "namespace": null,
         "name": "CreditFraud",
@@ -558,7 +558,7 @@ val testData = """
       {
         "description": "MLflow model with unique identifiers",
         "purl": "pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a&repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow",
-        "canonical_purl": "pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a",
+        "canonical_purl": "pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&repository_url=https:%2F%2Fadb-5245952564735461.0.azuredatabricks.net%2Fapi%2F2.0%2Fmlflow&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a",
         "type": "mlflow",
         "namespace": null,
         "name": "trafficsigns",
@@ -601,7 +601,7 @@ val testData = """
         "version": "2.11",
         "qualifiers": null,
         "subpath": null,
-        "is_invalid": false
+        "is_invalid": true
       },
       {
         "description": "cpan module name like distribution name",
@@ -637,7 +637,7 @@ val testData = """
         "version": "1.55",
         "qualifiers": null,
         "subpath": null,
-        "is_invalid": false
+        "is_invalid": true
       },
       {
         "description": "cpan valid module name without version",
@@ -649,7 +649,7 @@ val testData = """
         "version": null,
         "qualifiers": null,
         "subpath": null,
-        "is_invalid": false
+        "is_invalid": true
       },
       {
         "description": "ensure namespace allows multiple segments",
