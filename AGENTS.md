@@ -13,3 +13,8 @@
 ## Lockfile Behavior
 
 - `kotlinWasmUpgradeYarnLock` may delete `kotlin-js-store/wasm/yarn.lock` when there are no wasm npm dependencies (this is expected behavior).
+
+## Commit Signing
+
+- Do not use `--no-gpg-sign` for commits in this repository.
+- If commit signing fails due to sandbox or keyring access, rerun commit with escalated permissions.
