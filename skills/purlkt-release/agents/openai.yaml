@@ -1,0 +1,4 @@
+interface:
+  display_name: "PurlKt Release"
+  short_description: "Run and verify the PurlKt Maven Central release workflow"
+  default_prompt: "Prepare, validate, and execute the PurlKt release process for a target version."
