@@ -51,6 +51,7 @@ Use tag format `v<version>` (for example `v0.0.8`).
 
 7. Finalize README sync.
 - Confirm `update-version` workflow updates `README.md` version snippets.
+- After the release workflow finishes, `git pull` before doing more local commits or pushes, because the README update action may have pushed a new commit to `master`.
 
 8. Verify release result.
 - Check artifact availability in Maven Central.

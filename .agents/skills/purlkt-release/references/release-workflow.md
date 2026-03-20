@@ -94,6 +94,7 @@ After GitHub Release published:
 1. `Update Version in README` workflow completed.
 2. `README.md` contains new version in Gradle and Maven snippets.
 3. Auto-commit from `github-actions[bot]` is present on `master`.
+4. Run `git pull` locally before any new commit or push, because the workflow may have advanced `origin/master`.
 
 ## Failure Playbook
 
@@ -108,3 +109,6 @@ After GitHub Release published:
 - README not updated:
   - Confirm GitHub Release was published (tag push alone is not enough).
   - Confirm `gh auth status` is valid before creating release from CLI.
+- Local branch is behind after release:
+  - Check `.github/workflows/update-version.yml`: it commits and pushes `README.md` changes to `master`.
+  - Run `git fetch origin master` or `git pull` before making the next local commit.
