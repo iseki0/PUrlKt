@@ -142,7 +142,7 @@ data class PUrl internal constructor(
                 fail("type cannot start with a number")
             }
             // Type cannot contain invalid characters
-            if (!type.matches(Regex("^[a-zA-Z0-9.+-]+$"))) {
+            if (!type.matches(TYPE_ALLOWED_REGEX)) {
                 fail("type contains invalid characters, only [a-zA-Z0-9.+-] are allowed")
             }
 
@@ -357,7 +357,7 @@ data class PUrl internal constructor(
                 "pub" -> {
                     // Name must be lowercase and only allow [a-z0-9_] characters
                     name = name.lowercase()
-                    if (!name.matches(Regex("^[a-z0-9_]+$"))) {
+                    if (!name.matches(PUB_NAME_ALLOWED_REGEX)) {
                         fail("pub: name must only contain [a-z0-9_] characters")
                     }
                 }
@@ -539,6 +539,9 @@ object PUrlSerializer : KSerializer<PUrl> {
     }
 
 }
+
+private val TYPE_ALLOWED_REGEX = Regex("^[a-zA-Z0-9.+-]+$")
+private val PUB_NAME_ALLOWED_REGEX = Regex("^[a-z0-9_]+$")
 
 private fun fail(message: String): Nothing {
     throw PUrlException(message)
