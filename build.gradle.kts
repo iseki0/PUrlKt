@@ -82,6 +82,10 @@ tasks.named("jvmTest") {
     useJUnitPlatform()
 }
 
+tasks.named("check") {
+    dependsOn("checkLegacyAbi")
+}
+
 signing {
     useGpgCmd()
 }

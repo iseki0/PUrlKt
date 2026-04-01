@@ -1,0 +1,77 @@
+// Klib ABI Dump
+// Targets: [js, wasmJs, wasmWasi]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <space.iseki.purlkt:purlkt>
+final class space.iseki.purl/PUrl { // space.iseki.purl/PUrl|null[0]
+    final val name // space.iseki.purl/PUrl.name|{}name[0]
+        final fun <get-name>(): kotlin/String // space.iseki.purl/PUrl.name.<get-name>|<get-name>(){}[0]
+    final val namespace // space.iseki.purl/PUrl.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin.collections/List<kotlin/String> // space.iseki.purl/PUrl.namespace.<get-namespace>|<get-namespace>(){}[0]
+    final val qualifiers // space.iseki.purl/PUrl.qualifiers|{}qualifiers[0]
+        final fun <get-qualifiers>(): kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>> // space.iseki.purl/PUrl.qualifiers.<get-qualifiers>|<get-qualifiers>(){}[0]
+    final val subpath // space.iseki.purl/PUrl.subpath|{}subpath[0]
+        final fun <get-subpath>(): kotlin/String // space.iseki.purl/PUrl.subpath.<get-subpath>|<get-subpath>(){}[0]
+    final val type // space.iseki.purl/PUrl.type|{}type[0]
+        final fun <get-type>(): kotlin/String // space.iseki.purl/PUrl.type.<get-type>|<get-type>(){}[0]
+    final val version // space.iseki.purl/PUrl.version|{}version[0]
+        final fun <get-version>(): kotlin/String // space.iseki.purl/PUrl.version.<get-version>|<get-version>(){}[0]
+
+    final fun component1(): kotlin/String // space.iseki.purl/PUrl.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // space.iseki.purl/PUrl.component2|component2(){}[0]
+    final fun component3(): kotlin/String // space.iseki.purl/PUrl.component3|component3(){}[0]
+    final fun component4(): kotlin/String // space.iseki.purl/PUrl.component4|component4(){}[0]
+    final fun component5(): kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>> // space.iseki.purl/PUrl.component5|component5(){}[0]
+    final fun component6(): kotlin/String // space.iseki.purl/PUrl.component6|component6(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // space.iseki.purl/PUrl.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // space.iseki.purl/PUrl.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // space.iseki.purl/PUrl.toString|toString(){}[0]
+    final fun toUriString(): kotlin/String // space.iseki.purl/PUrl.toUriString|toUriString(){}[0]
+
+    final class Builder { // space.iseki.purl/PUrl.Builder|null[0]
+        constructor <init>() // space.iseki.purl/PUrl.Builder.<init>|<init>(){}[0]
+
+        final fun build(): space.iseki.purl/PUrl // space.iseki.purl/PUrl.Builder.build|build(){}[0]
+        final fun name(kotlin/String): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.name|name(kotlin.String){}[0]
+        final fun namespace(kotlin.collections/List<kotlin/String>): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.namespace|namespace(kotlin.collections.List<kotlin.String>){}[0]
+        final fun qualifiers(kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/String>>): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.qualifiers|qualifiers(kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.String>>){}[0]
+        final fun subpath(kotlin/String): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.subpath|subpath(kotlin.String){}[0]
+        final fun type(kotlin/String): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.type|type(kotlin.String){}[0]
+        final fun version(kotlin/String): space.iseki.purl/PUrl.Builder // space.iseki.purl/PUrl.Builder.version|version(kotlin.String){}[0]
+    }
+
+    final object Companion { // space.iseki.purl/PUrl.Companion|null[0]
+        final fun parse(kotlin/String): space.iseki.purl/PUrl // space.iseki.purl/PUrl.Companion.parse|parse(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<space.iseki.purl/PUrl> // space.iseki.purl/PUrl.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class space.iseki.purl/PUrlBuildException : space.iseki.purl/PUrlException { // space.iseki.purl/PUrlBuildException|null[0]
+    constructor <init>(kotlin/String) // space.iseki.purl/PUrlBuildException.<init>|<init>(kotlin.String){}[0]
+}
+
+final class space.iseki.purl/PUrlParsingException : space.iseki.purl/PUrlException { // space.iseki.purl/PUrlParsingException|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // space.iseki.purl/PUrlParsingException.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val input // space.iseki.purl/PUrlParsingException.input|{}input[0]
+        final fun <get-input>(): kotlin/String // space.iseki.purl/PUrlParsingException.input.<get-input>|<get-input>(){}[0]
+    final val message // space.iseki.purl/PUrlParsingException.message|{}message[0]
+        final fun <get-message>(): kotlin/String // space.iseki.purl/PUrlParsingException.message.<get-message>|<get-message>(){}[0]
+    final val reason // space.iseki.purl/PUrlParsingException.reason|{}reason[0]
+        final fun <get-reason>(): kotlin/String // space.iseki.purl/PUrlParsingException.reason.<get-reason>|<get-reason>(){}[0]
+}
+
+open class space.iseki.purl/PUrlException : kotlin/RuntimeException { // space.iseki.purl/PUrlException|null[0]
+    constructor <init>(kotlin/String? = ...) // space.iseki.purl/PUrlException.<init>|<init>(kotlin.String?){}[0]
+}
+
+final object space.iseki.purl/PUrlSerializer : kotlinx.serialization/KSerializer<space.iseki.purl/PUrl> { // space.iseki.purl/PUrlSerializer|null[0]
+    final val descriptor // space.iseki.purl/PUrlSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // space.iseki.purl/PUrlSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): space.iseki.purl/PUrl // space.iseki.purl/PUrlSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, space.iseki.purl/PUrl) // space.iseki.purl/PUrlSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;space.iseki.purl.PUrl){}[0]
+}
