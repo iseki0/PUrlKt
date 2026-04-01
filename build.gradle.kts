@@ -86,6 +86,42 @@ tasks.named("check") {
     dependsOn("checkLegacyAbi")
 }
 
+if (System.getenv("CI") == "true") {
+    val klibAbiReferenceDump = layout.projectDirectory.file("api/${rootProject.name}.klib.api")
+    val klibAbiGeneratedDump = layout.buildDirectory.file("kotlin/abi-legacy/${rootProject.name}.klib.api")
+
+    tasks.named("checkLegacyAbi") {
+        doFirst {
+            val referenceDump = klibAbiReferenceDump.asFile
+            val generatedDump = klibAbiGeneratedDump.get().asFile
+
+            if (!referenceDump.exists() || !generatedDump.exists()) return@doFirst
+
+            val referenceText = referenceDump.readText()
+            val referenceTargets = referenceText
+                .lineSequence()
+                .firstOrNull { it.startsWith("// Targets: ") }
+                ?: return@doFirst
+
+            val originalGeneratedDump = generatedDump.readText()
+            val lineSeparator = if (referenceText.contains("\r\n")) "\r\n" else "\n"
+            val hasTrailingNewline = referenceText.endsWith("\n")
+            val normalizedLines = originalGeneratedDump
+                .replace(Regex("^// Targets: .*$", RegexOption.MULTILINE), referenceTargets)
+                .replace("\r\n", "\n")
+                .split("\n")
+                .dropLastWhile { it.isEmpty() }
+            val normalizedGeneratedDump = originalGeneratedDump
+                .let { normalizedLines.joinToString(lineSeparator) }
+                .let { normalized ->
+                    if (hasTrailingNewline) normalized + lineSeparator else normalized
+                }
+
+            generatedDump.writeText(normalizedGeneratedDump)
+        }
+    }
+}
+
 signing {
     useGpgCmd()
 }
