@@ -18,3 +18,9 @@
 
 - Do not use `--no-gpg-sign` for commits in this repository.
 - If commit signing fails due to sandbox or keyring access, rerun commit with escalated permissions.
+
+## Commit Message Style
+
+- Use a short imperative subject line in English, for example `Normalize CI ABI dump targets`.
+- Prefer sentence-style subjects without a trailing period.
+- Only use a prefix such as `docs:` or `chore:` when it adds clear value and matches existing history.
