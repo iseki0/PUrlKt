@@ -2,6 +2,8 @@ package space.iseki.purl
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class PUrlTest {
     @Test
@@ -25,6 +27,38 @@ class PUrlTest {
         assertEquals(p, p2)
         assertEquals(p.toUriString(), p2.toUriString())
         println("$s -> $p2")
+    }
+
+    @Test
+    fun buildCollectsMultipleValidationErrors() {
+        val exception = assertFailsWith<PUrlBuildException> {
+            PUrl.Builder()
+                .type("1 bad")
+                .name("")
+                .qualifiers(listOf("bad key" to "value"))
+                .build()
+        }
+
+        assertEquals(
+            listOf(
+                "name is required",
+                "type cannot start with a number",
+                "type contains invalid characters, only [a-zA-Z0-9.+-] are allowed",
+                "qualifier key cannot contain spaces: bad key",
+            ),
+            exception.errors,
+        )
+        assertTrue(exception.message!!.endsWith("Found 4 errors."))
+    }
+
+    @Test
+    fun buildKeepsSingleErrorMessageShape() {
+        val exception = assertFailsWith<PUrlBuildException> {
+            PUrl.Builder().name("demo").build()
+        }
+
+        assertEquals(listOf("type is required"), exception.errors)
+        assertEquals("type is required", exception.message)
     }
 
 }

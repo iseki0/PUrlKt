@@ -37,6 +37,8 @@ public final class space/iseki/purl/PUrl$Companion {
 
 public final class space/iseki/purl/PUrlBuildException : space/iseki/purl/PUrlException {
 	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getErrors ()Ljava/util/List;
 }
 
 public class space/iseki/purl/PUrlException : java/lang/RuntimeException {

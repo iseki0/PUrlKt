@@ -121,14 +121,25 @@ data class PUrl internal constructor(
          * @throws PUrlBuildException If validation fails
          */
         fun build(): PUrl {
+            val errors = mutableListOf<String>()
             return try {
-                build0()
+                build0(errors)
+            } catch (e: PUrlBuildException) {
+                throw e
             } catch (e: PUrlException) {
-                throw PUrlBuildException(e.message.orEmpty())
+                val message = e.message.orEmpty()
+                if (message.isNotEmpty() && message !in errors) {
+                    errors += message
+                }
+                throw PUrlBuildException(buildErrorMessage(errors), errors)
             }
         }
 
-        internal fun build0(): PUrl {
+        internal fun build0(errors: MutableList<String> = mutableListOf()): PUrl {
+            fun fail(message: String) {
+                errors += message
+            }
+
             if (type.isEmpty()) {
                 fail("type is required")
             }
@@ -138,11 +149,11 @@ data class PUrl internal constructor(
 
             // Check if type is valid
             // Type cannot start with a number
-            if (type[0].isDigit()) {
+            if (type.isNotEmpty() && type[0].isDigit()) {
                 fail("type cannot start with a number")
             }
             // Type cannot contain invalid characters
-            if (!type.matches(TYPE_ALLOWED_REGEX)) {
+            if (type.isNotEmpty() && !type.matches(TYPE_ALLOWED_REGEX)) {
                 fail("type contains invalid characters, only [a-zA-Z0-9.+-] are allowed")
             }
 
@@ -415,6 +426,10 @@ data class PUrl internal constructor(
                 }
             }
 
+            if (errors.isNotEmpty()) {
+                throw PUrlBuildException(buildErrorMessage(errors), errors)
+            }
+
             return PUrl(
                 type = type,
                 namespace = asUnmodifiableList(namespace),
@@ -543,8 +558,9 @@ object PUrlSerializer : KSerializer<PUrl> {
 private val TYPE_ALLOWED_REGEX = Regex("^[a-zA-Z0-9.+-]+$")
 private val PUB_NAME_ALLOWED_REGEX = Regex("^[a-z0-9_]+$")
 
-private fun fail(message: String): Nothing {
-    throw PUrlException(message)
+private fun buildErrorMessage(errors: List<String>): String {
+    if (errors.size == 1) return errors.single()
+    return errors.joinToString(separator = "; ", postfix = ". Found ${errors.size} errors.")
 }
 
 private fun String.encodePurlQualifierKey(): String {

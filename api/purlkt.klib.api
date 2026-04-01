@@ -51,6 +51,10 @@ final class space.iseki.purl/PUrl { // space.iseki.purl/PUrl|null[0]
 
 final class space.iseki.purl/PUrlBuildException : space.iseki.purl/PUrlException { // space.iseki.purl/PUrlBuildException|null[0]
     constructor <init>(kotlin/String) // space.iseki.purl/PUrlBuildException.<init>|<init>(kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>) // space.iseki.purl/PUrlBuildException.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val errors // space.iseki.purl/PUrlBuildException.errors|{}errors[0]
+        final fun <get-errors>(): kotlin.collections/List<kotlin/String> // space.iseki.purl/PUrlBuildException.errors.<get-errors>|<get-errors>(){}[0]
 }
 
 final class space.iseki.purl/PUrlParsingException : space.iseki.purl/PUrlException { // space.iseki.purl/PUrlParsingException|null[0]

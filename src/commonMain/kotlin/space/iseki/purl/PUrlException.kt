@@ -12,7 +12,17 @@ open class PUrlException(message: String? = null) : RuntimeException(message)
  *
  * @property message Error message describing the build failure
  */
-class PUrlBuildException(message: String) : PUrlException(message)
+class PUrlBuildException : PUrlException {
+    val errors: List<String>
+
+    constructor(message: String) : super(message) {
+        errors = listOf(message)
+    }
+
+    constructor(message: String, errors: List<String>) : super(message) {
+        this.errors = asUnmodifiableList(errors.toList())
+    }
+}
 
 /**
  * Exception thrown when there is an error during PUrl parsing process.
