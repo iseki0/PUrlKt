@@ -1,5 +1,11 @@
 # AI Context Notes
 
+## Gradle Execution
+
+- Always use the Gradle Wrapper for this repository: `./gradlew` or `.\gradlew.bat`.
+- Never use a locally installed `gradle` command in this repository.
+- Never run Gradle in the non-escalated local sandbox. Request escalated permissions before executing any Gradle command.
+
 ## Build Notes
 
 - This project is Kotlin Multiplatform and `./gradlew build` validates generated Yarn lockfiles.
