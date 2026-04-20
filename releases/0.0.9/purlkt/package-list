@@ -1,0 +1,37 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:space.iseki.purl////PointingToDeclaration/purlkt/space.iseki.purl/index.html
+$dokka.location:space.iseki.purl/PUrl.Builder///PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/index.html
+$dokka.location:space.iseki.purl/PUrl.Builder/Builder/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/-builder.html
+$dokka.location:space.iseki.purl/PUrl.Builder/build/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/build.html
+$dokka.location:space.iseki.purl/PUrl.Builder/name/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/name.html
+$dokka.location:space.iseki.purl/PUrl.Builder/namespace/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/namespace.html
+$dokka.location:space.iseki.purl/PUrl.Builder/qualifiers/#kotlin.collections.List[[Error type: Unresolved type for Pair<String, String>][kotlin.String,kotlin.String]]/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/qualifiers.html
+$dokka.location:space.iseki.purl/PUrl.Builder/subpath/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/subpath.html
+$dokka.location:space.iseki.purl/PUrl.Builder/type/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/type.html
+$dokka.location:space.iseki.purl/PUrl.Builder/version/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-builder/version.html
+$dokka.location:space.iseki.purl/PUrl.Companion///PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-companion/index.html
+$dokka.location:space.iseki.purl/PUrl.Companion/parse/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/-companion/parse.html
+$dokka.location:space.iseki.purl/PUrl///PointingToDeclaration/purlkt/space.iseki.purl/-p-url/index.html
+$dokka.location:space.iseki.purl/PUrl/name/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/name.html
+$dokka.location:space.iseki.purl/PUrl/namespace/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/namespace.html
+$dokka.location:space.iseki.purl/PUrl/qualifiers/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/qualifiers.html
+$dokka.location:space.iseki.purl/PUrl/subpath/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/subpath.html
+$dokka.location:space.iseki.purl/PUrl/toString/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/to-string.html
+$dokka.location:space.iseki.purl/PUrl/toUriString/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/to-uri-string.html
+$dokka.location:space.iseki.purl/PUrl/type/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/type.html
+$dokka.location:space.iseki.purl/PUrl/version/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url/version.html
+$dokka.location:space.iseki.purl/PUrlBuildException///PointingToDeclaration/purlkt/space.iseki.purl/-p-url-build-exception/index.html
+$dokka.location:space.iseki.purl/PUrlBuildException/PUrlBuildException/#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-build-exception/-p-url-build-exception.html
+$dokka.location:space.iseki.purl/PUrlException///PointingToDeclaration/purlkt/space.iseki.purl/-p-url-exception/index.html
+$dokka.location:space.iseki.purl/PUrlException/PUrlException/#kotlin.String?/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-exception/-p-url-exception.html
+$dokka.location:space.iseki.purl/PUrlParsingException///PointingToDeclaration/purlkt/space.iseki.purl/-p-url-parsing-exception/index.html
+$dokka.location:space.iseki.purl/PUrlParsingException/PUrlParsingException/#kotlin.String#kotlin.String/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-parsing-exception/-p-url-parsing-exception.html
+$dokka.location:space.iseki.purl/PUrlParsingException/input/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-parsing-exception/input.html
+$dokka.location:space.iseki.purl/PUrlParsingException/message/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-parsing-exception/message.html
+$dokka.location:space.iseki.purl/PUrlParsingException/reason/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-parsing-exception/reason.html
+$dokka.location:space.iseki.purl/PUrlSerializer///PointingToDeclaration/purlkt/space.iseki.purl/-p-url-serializer/index.html
+$dokka.location:space.iseki.purl/PUrlSerializer/descriptor/#/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-serializer/descriptor.html
+$dokka.location:space.iseki.purl/PUrlSerializer/deserialize/#kotlinx.serialization.encoding.Decoder/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-serializer/deserialize.html
+$dokka.location:space.iseki.purl/PUrlSerializer/serialize/#kotlinx.serialization.encoding.Encoder#space.iseki.purl.PUrl/PointingToDeclaration/purlkt/space.iseki.purl/-p-url-serializer/serialize.html
+space.iseki.purl
