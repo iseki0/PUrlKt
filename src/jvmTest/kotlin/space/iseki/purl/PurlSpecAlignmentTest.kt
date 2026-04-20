@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonElement
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
@@ -46,11 +47,12 @@ class PurlSpecAlignmentTest {
     )
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val specTestsRoot by lazy { findSpecTestsRoot() }
 
     @TestFactory
     fun runPurlSpecTests(): List<DynamicTest> {
-        return loadCases("purl-spec/tests/spec")
-            .plus(loadCases("purl-spec/tests/types"))
+        return loadCases(specTestsRoot.resolve("spec"))
+            .plus(loadCases(specTestsRoot.resolve("types")))
             .map { (id, case) ->
                 DynamicTest.dynamicTest(id) {
                     runCase(case)
@@ -58,11 +60,10 @@ class PurlSpecAlignmentTest {
             }
     }
 
-    private fun loadCases(resourceDir: String): List<Pair<String, PurlSpecTestCase>> {
-        val rootUrl = requireNotNull(javaClass.classLoader.getResource(resourceDir)) {
-            "Resource directory not found: $resourceDir"
+    private fun loadCases(root: Path): List<Pair<String, PurlSpecTestCase>> {
+        require(Files.isDirectory(root)) {
+            "Spec test directory not found: $root"
         }
-        val root = Paths.get(rootUrl.toURI())
         return Files.list(root).use { stream ->
             stream
                 .filter { it.isRegularFile() && it.name.endsWith(".json") }
@@ -76,6 +77,18 @@ class PurlSpecAlignmentTest {
                 }
                 .toList()
         }
+    }
+
+    private fun findSpecTestsRoot(): Path {
+        var current = Paths.get("").toAbsolutePath()
+        while (true) {
+            val candidate = current.resolve("purl-spec").resolve("tests")
+            if (Files.isDirectory(candidate)) {
+                return candidate
+            }
+            current = current.parent ?: break
+        }
+        error("purl-spec submodule not found. Run `git submodule update --init --recursive`.")
     }
 
     private fun runCase(case: PurlSpecTestCase) {

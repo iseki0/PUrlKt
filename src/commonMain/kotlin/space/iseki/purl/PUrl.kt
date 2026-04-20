@@ -205,6 +205,17 @@ data class PUrl internal constructor(
                     // No special validation
                 }
 
+                "chrome-extension" -> {
+                    if (namespace.isNotEmpty()) fail("chrome-extension: namespace is prohibited")
+                    name = name.lowercase()
+                    if (!name.matches(CHROME_EXTENSION_NAME_ALLOWED_REGEX)) {
+                        fail("chrome-extension: name must be 32 lowercase letters")
+                    }
+                    if (version.isNotEmpty() && !version.matches(CHROME_EXTENSION_VERSION_ALLOWED_REGEX)) {
+                        fail("chrome-extension: version must be 1 to 4 numeric segments separated by dots")
+                    }
+                }
+
                 "cocoapods" -> {
                     if (name.contains(" ") || name.contains("+") || name.startsWith(".")) {
                         fail("cocoapods: name cannot contain whitespace, a plus (+) character, or begin with a period (.)")
@@ -407,7 +418,6 @@ data class PUrl internal constructor(
 
                 "swift" -> {
                     if (namespace.isEmpty()) fail("swift: namespace is required (source host and user/organization)")
-                    if (version.isEmpty()) fail("swift: version is required")
                     if (name.isEmpty()) {
                         fail("swift: name is required")
                     }
@@ -556,6 +566,8 @@ object PUrlSerializer : KSerializer<PUrl> {
 }
 
 private val TYPE_ALLOWED_REGEX = Regex("^[a-zA-Z0-9.+-]+$")
+private val CHROME_EXTENSION_NAME_ALLOWED_REGEX = Regex("^[a-z]{32}$")
+private val CHROME_EXTENSION_VERSION_ALLOWED_REGEX = Regex("^\\d+(\\.\\d+){0,3}$")
 private val PUB_NAME_ALLOWED_REGEX = Regex("^[a-z0-9_]+$")
 
 private fun buildErrorMessage(errors: List<String>): String {
