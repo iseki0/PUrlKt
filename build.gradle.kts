@@ -15,6 +15,31 @@ plugins {
     signing
 }
 
+val projectUrl = "https://github.com/iseki0/PUrlKt"
+
+val dokkaSourceCommit = providers.gradleProperty("docsSourceCommit")
+    .orElse(providers.environmentVariable("GITHUB_SHA"))
+    .orElse(
+        providers.exec {
+            commandLine("git", "rev-parse", "HEAD")
+            workingDir = rootDir
+        }.standardOutput.asText,
+    )
+    .map { commit -> commit.trim().ifBlank { "master" } }
+    .get()
+
+val dokkaSourceDirty = providers.exec {
+    commandLine("git", "status", "--porcelain", "--untracked-files=no")
+    workingDir = rootDir
+}.standardOutput.asText.map { it.isNotBlank() }.get()
+
+if (dokkaSourceDirty) {
+    logger.warn(
+        "Working tree is dirty; Dokka source links will point to HEAD commit {} and may not match uncommitted changes.",
+        dokkaSourceCommit,
+    )
+}
+
 allprojects {
     group = "space.iseki.purlkt"
     if (version == "unspecified") version = "0.0.1-SNAPSHOT"
@@ -132,7 +157,6 @@ mavenPublishing {
     signAllPublications()
     coordinates(groupId = group.toString(), artifactId = rootProject.name, version = version.toString())
     pom {
-        val projectUrl = "https://github.com/iseki0/PurlKt"
         name = "PurlKt"
         description = "A library for purl parsing and building, in Kotlin multiplatform"
         url = projectUrl
@@ -175,7 +199,7 @@ dokka {
                 project.layout.projectDirectory.dir("src").asFile.relativeTo(rootProject.layout.projectDirectory.asFile)
                     .toString()
                     .replace('\\', '/')
-            remoteUrl = URI.create("https://github.com/iseki0/PurlKt/tree/master/$p")
+            remoteUrl = URI.create("$projectUrl/tree/$dokkaSourceCommit/$p")
             remoteLineSuffix = "#L"
         }
         externalDocumentationLinks.create("") {
