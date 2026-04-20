@@ -1,52 +1,165 @@
 name: Docs
+
 on:
   push:
-    paths:
-      - '**.kts'
-      - '**.kt'
-      - '**.java'
-      - '**.md'
     branches:
       - master
+    tags:
+      - 'v*'
   workflow_dispatch:
+
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+
 concurrency:
   group: "pages"
   cancel-in-progress: true
+
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build-site:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve docs target
+        id: target
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" == v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            echo "channel=release" >> "$GITHUB_OUTPUT"
+            echo "version_label=${version}" >> "$GITHUB_OUTPUT"
+            echo "release_version=${version}" >> "$GITHUB_OUTPUT"
+          else
+            version="${GITHUB_REF_NAME}-SNAPSHOT"
+            echo "channel=snapshot" >> "$GITHUB_OUTPUT"
+            echo "version_label=${version}" >> "$GITHUB_OUTPUT"
+            echo "release_version=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
           java-version-file: '.java-version'
           distribution: 'temurin'
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-encryption-key: ${{ secrets.GradleEncryptionKey }} # openssl rand -base64 16
+          cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
           validate-wrappers: true
           build-scan-publish: true
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
           gradle-version: wrapper
-      - name: Generate docs
-        run: ./gradlew dokkaGenerate
+
+      - name: Generate docs for current ref
+        run: ./gradlew dokkaGenerate -Pversion=${{ steps.target.outputs.version_label }}
+
+      - name: Prepare site state
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          STATE_BRANCH: pages-state
+        shell: bash
+        run: |
+          rm -rf .pages-state .site
+          remote_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin "${STATE_BRANCH}" >/dev/null 2>&1; then
+            git clone --branch "${STATE_BRANCH}" --single-branch "${remote_url}" .pages-state
+          else
+            mkdir -p .pages-state
+            (
+              cd .pages-state
+              git init
+              git checkout -b "${STATE_BRANCH}"
+              git remote add origin "${remote_url}"
+            )
+          fi
+          mkdir -p .site
+          rsync -a --delete --exclude '.git' .pages-state/ .site/
+
+      - name: Seed latest release docs when site has no releases
+        if: ${{ steps.target.outputs.channel == 'snapshot' }}
+        shell: bash
+        run: |
+          if find .site/releases -mindepth 1 -maxdepth 1 -type d >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          latest_tag="$(git tag -l 'v*' --sort=-version:refname | head -n 1)"
+          if [[ -z "${latest_tag}" ]]; then
+            exit 0
+          fi
+
+          release_version="${latest_tag#v}"
+          rm -rf .release-seed
+          git clone --depth 1 --branch "${latest_tag}" "$(git remote get-url origin)" .release-seed
+          (
+            cd .release-seed
+            ./gradlew dokkaGenerate -Pversion="${release_version}"
+          )
+          python3 .github/scripts/assemble_pages_site.py \
+            --site-dir .site \
+            --docs-dir .release-seed/build/dokka/html \
+            --channel release \
+            --version-label "${release_version}" \
+            --release-version "${release_version}"
+
+      - name: Update assembled site
+        shell: bash
+        run: |
+          args=(
+            --site-dir .site
+            --docs-dir build/dokka/html
+            --channel "${{ steps.target.outputs.channel }}"
+            --version-label "${{ steps.target.outputs.version_label }}"
+          )
+          if [[ -n "${{ steps.target.outputs.release_version }}" ]]; then
+            args+=(--release-version "${{ steps.target.outputs.release_version }}")
+          fi
+          python3 .github/scripts/assemble_pages_site.py "${args[@]}"
+
+      - name: Persist site state branch
+        env:
+          STATE_BRANCH: pages-state
+        shell: bash
+        run: |
+          rsync -a --delete --exclude '.git' .site/ .pages-state/
+          (
+            cd .pages-state
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .
+            if git diff --cached --quiet; then
+              echo "No Pages state changes to commit."
+            else
+              git commit -m "docs: update published site for ${GITHUB_REF_NAME}"
+              git push origin "${STATE_BRANCH}"
+            fi
+          )
+
+      - name: Configure Pages
+        id: deployment
+        uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          # Upload entire repository
-          path: 'build/dokka/html'
+          path: '.site'
+
+  deploy:
+    needs: build-site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
